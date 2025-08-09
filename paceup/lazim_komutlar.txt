@@ -1,0 +1,133 @@
+//docker : 
+REM Bulunduğun klasördeki Dockerfile’dan imaj oluştur
+docker build -t flutter-dev .
+
+REM Projeni /work olarak bağla, cache volume’ları ekle, container içine gir
+docker run --rm -it ^
+  -v "%cd%:/work" -w /work ^
+  -v flutter_pub_cache:/root/.pub-cache ^
+  -v gradle_cache:/root/.gradle ^
+  flutter-dev bash
+
+REM Çalışan container’ları listele
+docker ps
+
+REM Tüm container’lar (duranlar dahil)
+docker ps -a
+
+REM Çalışan bir container’a ikinci terminal aç
+docker exec -it <CONTAINER_ID_or_NAME> bash
+
+REM Container’ı durdur
+docker stop <CONTAINER_ID_or_NAME>
+
+REM Duran container’ı sil
+docker rm <CONTAINER_ID_or_NAME>
+
+REM İmajları listele
+docker images
+
+REM Bir imajı sil
+docker rmi flutter-dev
+
+REM Volume’ları listele
+docker volume ls
+
+REM Bir volume’u sil
+docker volume rm flutter_pub_cache
+
+REM Logları canlı izle
+docker logs -f <CONTAINER_ID_or_NAME>
+
+REM İmajı dışa aktar (.tar)
+docker save -o flutter-dev.tar flutter-dev
+
+REM Dışarıdan imaj yükle
+docker load -i flutter-dev.tar
+
+REM Ağ testi – container içindeyken
+ping 192.168.1.10
+
+REM Gereksiz duran container/imaj/volume/network’leri temizle
+docker system prune -a
+
+===============================================================================
+//adb uzak baglanti :
+
+REM ADB sürümünü göster
+adb version
+
+REM Bağlı cihazları listele
+adb devices
+
+REM --- USB -> Wi-Fi bağlanma (Android 10 ve altı) ---
+REM Önce USB ile bağlan, sonra cihazı TCP/IP moduna al
+adb tcpip 5555
+REM USB’yi çıkar, IP’yi öğren, bağlan
+adb connect TELEFON_IP:5555
+
+REM --- Android 11+ Kablosuz Hata Ayıklama ---
+REM Telefonda Wireless debugging -> Pair device with pairing code
+adb pair TELEFON_IP:PAIR_PORT PAIRING_CODE
+adb connect TELEFON_IP:PORT
+
+REM Bağlantıyı kes
+adb disconnect TELEFON_IP:PORT
+
+REM ADB’yi yeniden başlat
+adb kill-server
+adb start-server
+
+REM APK yükle
+adb install app-debug.apk
+
+REM Uygulama kaldır
+adb uninstall com.example.app
+
+REM Cihaz shell’ine gir
+adb shell
+
+REM Logcat filtreli izleme
+adb logcat | findstr /i flutter
+adb logcat | findstr /i com.example.app
+
+REM Port yönlendirme (host -> cihaz)
+adb forward tcp:8080 tcp:8080
+
+REM Ters yönlendirme (cihaz -> host)
+adb reverse tcp:3000 tcp:3000
+
+
+=================================================================================
+//flutter :
+
+REM Bağımlılıkları çek
+flutter pub get
+
+REM Bağlı cihazları gör
+flutter devices
+
+REM Belirli cihaza çalıştır
+flutter run -d 220233L2I
+
+REM Sadece Android hedefini etkin tut
+flutter config --no-enable-linux-desktop
+
+REM Temizlik ve derleme
+flutter clean
+flutter build apk --release
+flutter build appbundle --release
+
+==========================================================================================
+//ndk android:
+REM Paketleri listele
+sdkmanager --list
+
+REM Gerekli bileşenleri kur
+sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+
+REM NDK ve CMake kur
+sdkmanager "ndk;27.0.12077973" "cmake;3.22.1"
+
+REM Lisansları kabul et
+yes | sdkmanager --licenses
