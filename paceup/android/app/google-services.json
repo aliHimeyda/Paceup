@@ -22,14 +22,6 @@
           }
         },
         {
-          "client_id": "919684569202-v78vhvr896grcbs8jscbr8jbnvqef122.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.paceup",
-            "certificate_hash": "064a77ca8480d6e680adbc8b391073b8ad76bb38"
-          }
-        },
-        {
           "client_id": "919684569202-2mh2gbfj55d74gnit4k62l9v4erff70o.apps.googleusercontent.com",
           "client_type": 3
         }

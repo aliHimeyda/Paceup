@@ -1,20 +1,74 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:paceup/bottomnavigation.dart';
 import 'package:paceup/core/constants/global_values.dart';
 import 'package:paceup/features/home_page/homepage.dart';
 import 'package:paceup/features/login_page/loginpage.dart';
 import 'package:paceup/features/logo_page/logopage.dart';
+import 'package:paceup/features/progress_result_page/progressResult.dart';
 import 'package:paceup/features/promotion_page/promotion_page.dart';
 import 'package:paceup/routing/paths.dart';
 
+final routerkey = GlobalKey<NavigatorState>();
 final GoRouter router = GoRouter(
+  navigatorKey: routerkey,
   initialLocation: Paths.logopage,
   routes: [
-    GoRoute(
-      path: Paths.promotionpage,
-      builder: (context, state) => PromotionPage(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          Bottomnavigation(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          navigatorKey:
+              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
+          routes: [
+            GoRoute(
+              path: Paths.homepage,
+              builder: (context, state) => HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey:
+              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
+          routes: [
+            GoRoute(
+              path: Paths.progressresultpage,
+              builder: (context, state) => ProgressResultPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey:
+              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
+          routes: [
+            GoRoute(
+              path: Paths.promotionpage,
+              builder: (context, state) => PromotionPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey:
+              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
+          routes: [
+            GoRoute(
+              path: Paths.logopage,
+              builder: (context, state) => LoadingPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey:
+              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
+          routes: [
+            GoRoute(
+              path: Paths.loginpage,
+              builder: (context, state) => Loginpage(),
+            ),
+          ],
+        ),
+      ],
     ),
-    GoRoute(path: Paths.logopage, builder: (context, state) => LoadingPage()),
-    GoRoute(path: Paths.loginpage, builder: (context, state) => Loginpage()),
-    GoRoute(path: Paths.homepage, builder: (context, state) => HomeScreen()),
   ],
 );

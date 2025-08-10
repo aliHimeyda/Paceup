@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:paceup/core/constants/global_values.dart';
 import 'package:paceup/features/home_page/homepageprovider.dart';
+import 'package:paceup/widgets/addCard.dart';
+import 'package:paceup/widgets/eventCard.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -286,6 +288,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Color.fromARGB(255, 249, 249, 249),
               ),
@@ -331,7 +334,7 @@ class HomeScreen extends StatelessWidget {
                             height: min(barHeight, 130),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.blue
+                                  ? Theme.of(context).primaryColor
                                   : Colors.grey.shade300,
                               borderRadius: BorderRadius.horizontal(
                                 left: Radius.circular(6),
@@ -367,9 +370,20 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // 4. Running Event
-            const Text(
-              "Running Event",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Text(
+                  "Pepole's Running Events",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'See All',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -378,93 +392,29 @@ class HomeScreen extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 children: [
                   eventCard(
-                    "assets/run1.png",
+                    "assets/images/1.png",
                     "Moonlight Marathon Madness",
                     "Ersel Street",
+                    context,
                   ),
                   eventCard(
-                    "assets/run2.png",
+                    "assets/images/2.png",
                     "Sunset Serenity Run",
                     "Annapolis Junction",
+                    context,
                   ),
                   eventCard(
-                    "assets/run3.png",
+                    "assets/images/3.png",
                     "City Lights Sprint",
                     "Brooklyn Ave",
+                    context,
                   ),
+                  addCard(Icons.add, null, 'title', context),
                 ],
               ),
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: "Progress",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.flag), label: "Challenges"),
-          BottomNavigationBarItem(icon: Icon(Icons.star_border), label: "Pro"),
-        ],
-      ),
-    );
-  }
-
-  Widget eventCard(String image, String title, String location) {
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 10,
-            left: 10,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                "New Event",
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 40,
-            left: 10,
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 10,
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: Colors.white, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  location,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

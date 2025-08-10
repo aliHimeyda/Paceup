@@ -165,31 +165,30 @@ Future<UserCredential?> signInWithGoogle() async {
   getIt<Loader>().loading = true;
   getIt<Loader>().change();
   try {
-    // Google kullanıcı seçimi
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    debugPrint('basladi');
+    // v7: kullanıcı akışını başlat
+    final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+        .authenticate();
     if (googleUser == null) {
-      // Kullanıcı iptal etti
+      getIt<Loader>().loading = false;
+      getIt<Loader>().change();
       return null;
     }
 
-    // Kimlik doğrulama bilgilerini al
+    // v7: sadece idToken var; Firebase için yeterli
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
-
-    // Firebase kimlik bilgisi oluştur
+    debugPrint('idToken null mu? ${googleAuth.idToken == null}');
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
+      // accessToken artık authorization akışında; Firebase giriş için şart değil
     );
 
-    // Firebase ile giriş yap
     final UserCredential userCredential = await FirebaseAuth.instance
         .signInWithCredential(credential);
 
     final user = userCredential.user;
-
     if (user != null) {
-      debugPrint('kosula giris yapildi ------------------------');
       Firebaseservices.currentuser = user;
       Firebaseservices.isloading = true;
 
@@ -198,10 +197,6 @@ Future<UserCredential?> signInWithGoogle() async {
           .doc(user.uid)
           .get();
 
-      debugPrint(
-        ' giris bilgileri alindi ve giris yapildi ------------------------',
-      );
-      // Eğer kullanıcı Firestore’da kayıtlı değilse, ekle
       if (!userDoc.exists) {
         await FirebaseFirestore.instance
             .collection('userdata')
@@ -211,17 +206,14 @@ Future<UserCredential?> signInWithGoogle() async {
               'namesurname': user.displayName ?? '',
               'mail': user.email ?? '',
               'phoneno': '',
-              'password':
-                  '', // Google ile gelen kullanıcı için şifre boş olabilir
+              'password': '',
             });
       }
-      getIt<Loader>().loading = false;
-      getIt<Loader>().change();
-      return userCredential;
     }
+
     getIt<Loader>().loading = false;
     getIt<Loader>().change();
-    return null;
+    return userCredential;
   } catch (e) {
     getIt<Loader>().loading = false;
     getIt<Loader>().change();
@@ -377,15 +369,12 @@ Future<void> kayitEkle(
   }
 }
 
-
-Future<void> signinwithGoogle(BuildContext context)async{
+Future<void> signinwithGoogle(BuildContext context) async {
   final userCredential = await signInWithGoogle();
-                      if (userCredential != null) {
-                        print(
-                          'Giriş Başarılı: ${userCredential.user?.displayName}',
-                        );
-                        context.push(Paths.homepage);
-                      } else {
-                        print('Giriş iptal edildi veya hata oluştu');
-                      }
+  if (userCredential != null) {
+    print('Giriş Başarılı: ${userCredential.user?.displayName}');
+    context.push(Paths.homepage);
+  } else {
+    print('Giriş iptal edildi veya hata oluştu');
+  }
 }

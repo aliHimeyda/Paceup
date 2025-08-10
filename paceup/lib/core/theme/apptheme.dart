@@ -70,8 +70,7 @@ class AppTheme extends ChangeNotifier {
         Colors.white, // Sayfanın arka plan rengini belirler
 
     iconTheme: IconThemeData(
-      color: MyColors
-          .darkgray, // Genel ikon rengini koyu gri yapar (örn: klasör ikonları)
+      color:Colors.black, // Genel ikon rengini koyu gri yapar (örn: klasör ikonları)
       size: 17.23,
     ),
 
@@ -97,7 +96,7 @@ class AppTheme extends ChangeNotifier {
       ), // Genel metin stilini belirler (orta)
       titleLarge: TextStyle(
         color: Colors.white, // Başlık yazılarının rengini bordo yapar
-        fontSize: 20, // Başlık yazılarının boyutunu belirler
+        fontSize: 23, // Başlık yazılarının boyutunu belirler
         fontWeight: FontWeight.bold, // Başlık yazılarını kalın yapar
       ),
       titleMedium: TextStyle(
@@ -169,8 +168,7 @@ class AppTheme extends ChangeNotifier {
         Colors.black, // Sayfanın arka plan rengini belirler
 
     iconTheme: IconThemeData(
-      color: MyColors
-          .darkgray, // Genel ikon rengini koyu gri yapar (örn: klasör ikonları)
+      color: Colors.black, // Genel ikon rengini koyu gri yapar (örn: klasör ikonları)
       size: 17.23,
     ),
 
