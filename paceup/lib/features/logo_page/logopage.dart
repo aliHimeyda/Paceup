@@ -19,10 +19,10 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     Future.delayed(const Duration(seconds: 5), () async {
-      // final user = FirebaseAuth.instance.currentUser;
-      // if (user != null) {
-      //   await getcurrentuser();
-      // }
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await getcurrentuser();
+      }
       if (Firebaseservices.isloading) {
         context.pushReplacement(Paths.homepage);
       } else {

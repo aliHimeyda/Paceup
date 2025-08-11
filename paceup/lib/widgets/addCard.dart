@@ -1,50 +1,65 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 Widget addCard(
-    IconData icon,
-    String? image,
-    String title,
-    BuildContext context,
-  ) {
-    return Container(
+  IconData icon,
+  String? image,
+  String title,
+  BuildContext context,
+) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: Container(
       width: 150,
-      margin: const EdgeInsets.only(right: 12),
+      height: 172,
+      padding: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-         image: image != null
-      ? DecorationImage(
-          image: AssetImage(image),
-          fit: BoxFit.cover,
-        )
-      : null,
-      gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              stops: [0.0, 0.5, 1.0],
-                              colors: [
-                                Color.fromARGB(255, 79, 157, 110), // 0%
-                                Color.fromARGB(255, 102, 207, 144), // 50%
-                                Color.fromARGB(255, 79, 157, 110), // 100%
-                              ],
-                            ),
-      
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Theme.of(context).secondaryHeaderColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: Colors.white,size: 25,),
-            ),
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Theme.of(context).primaryColor, // 0%
+            Color(0xFFFAA74A), // 50%
+            Theme.of(context).primaryColor, // 100%
           ],
         ),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            blurRadius: 10,
+            spreadRadius: 3,
+            offset: Offset(2, 5),
+          ),
+        ],
       ),
-    );
-  }
+      child: GestureDetector(
+        onTap: () {},
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 10),
+              Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white70, width: 2),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 25,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}

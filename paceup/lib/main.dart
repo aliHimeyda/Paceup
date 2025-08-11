@@ -6,10 +6,12 @@ import 'package:paceup/core/services/loader.dart';
 import 'package:paceup/core/theme/apptheme.dart';
 import 'package:paceup/features/home_page/homepageprovider.dart';
 import 'package:paceup/features/login_page/loginpageprovider.dart';
+import 'package:paceup/features/progress_page/progresspageprovider.dart';
 import 'package:paceup/features/progress_result_page/progressResultprovider.dart';
 import 'package:paceup/features/promotion_page/promotion_page.dart';
 import 'package:paceup/features/promotion_page/promotion_provider.dart';
 import 'package:paceup/routing/router.dart';
+import 'package:paceup/widgets/monthlySteps/monthlyStepsprovider.dart';
 import 'package:provider/provider.dart';
 
 final getIt = GetIt.instance;
@@ -41,6 +43,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => Loginpageprovider()),
         ChangeNotifierProvider(create: (_) => HomepageProvider()),
         ChangeNotifierProvider(create: (_) => Progressresultprovider()),
+        ChangeNotifierProvider(create: (_) => Progresspageprovider()),
+        ChangeNotifierProvider(create: (_) => Monthlystepsprovider()),
       ],
       child: MyApp(),
     ),
