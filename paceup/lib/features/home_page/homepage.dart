@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:paceup/core/constants/global_values.dart';
 import 'package:paceup/features/home_page/homepageprovider.dart';
+import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/addCard.dart';
 import 'package:paceup/widgets/eventCard.dart';
 import 'package:paceup/widgets/monthlySteps/monthlyStats.dart';
@@ -48,20 +50,29 @@ class HomeScreen extends StatelessWidget {
                   height: 51,
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.grey.shade200,
-                        child: Image.asset(
-                          width: 10,
-                          height: 10,
-                          'assets/icons/Notification.png',
+                      GestureDetector(
+                        onTap: () {
+                          context.push(Paths.notificationspage);
+                        },
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey.shade200,
+                          child: Image.asset(
+                            width: 15,
+                            height: 15,
+                            'assets/icons/Notification.png',
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: Theme.of(context).canvasColor,
-                        child: Icon(Icons.person, color: Colors.white),
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -94,6 +105,7 @@ class HomeScreen extends StatelessWidget {
 
             // 4. Running Event
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "Pepole's Running Events",
@@ -103,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {},
                   child: Text(
                     'See All',
-                    style: Theme.of(context).textTheme.titleSmall,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],

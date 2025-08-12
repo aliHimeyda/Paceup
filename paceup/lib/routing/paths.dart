@@ -8,7 +8,7 @@ class Paths {
   static const String progresspage = '/progresspage';
   static const String progressresultpage = '/progressresultpage';
   static const String promotionpage = '/promotionpage';
-  static const String runningeventspage = '/runningeventspage';
+  static const String gopage = '/gopage';
   static const String runningeventsdetailspage = '/runningeventsdetailspage';
   static const String logopage = '/logopage';
 }

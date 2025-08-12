@@ -132,7 +132,10 @@ Widget weeklyTCard(
                       ),
                     ],
                   ),
-                  Text("$endingkm km", style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    "$endingkm km",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ],
               ),
               Column(

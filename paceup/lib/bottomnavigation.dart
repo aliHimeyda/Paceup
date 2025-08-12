@@ -24,6 +24,7 @@ class _BottomnavigationState extends State<Bottomnavigation> {
     bool showBottomNavBar =
         currentPath != Paths.logopage &&
         currentPath != Paths.promotionpage &&
+        currentPath != Paths.notificationspage &&
         currentPath != Paths.loginpage ;
     return Scaffold(
       bottomNavigationBar: showBottomNavBar
