@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:paceup/core/services/loader.dart';
+import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/main.dart';
 import 'package:paceup/routing/paths.dart';
 

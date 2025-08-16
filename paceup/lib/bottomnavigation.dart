@@ -25,7 +25,9 @@ class _BottomnavigationState extends State<Bottomnavigation> {
         currentPath != Paths.logopage &&
         currentPath != Paths.promotionpage &&
         currentPath != Paths.notificationspage &&
-        currentPath != Paths.loginpage ;
+        currentPath != Paths.gopage &&
+        currentPath != Paths.comingsoonpage &&
+        currentPath != Paths.loginpage;
     return Scaffold(
       bottomNavigationBar: showBottomNavBar
           ? NavigationBarTheme(
@@ -69,8 +71,8 @@ class _BottomnavigationState extends State<Bottomnavigation> {
                     label: 'Challenges',
                   ),
                   NavigationDestination(
-                    icon: _buildAssetIcon('assets/icons/proVector.png'),
-                    label: 'Pro',
+                    icon: Icon(Icons.person, color: Color(0xFF8E8E90)),
+                    label: 'Profile',
                   ),
                 ],
               ),

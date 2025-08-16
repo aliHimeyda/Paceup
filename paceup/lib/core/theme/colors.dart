@@ -16,10 +16,5 @@ class MyColors {
     156,
     101,
   ); // Turuncumsu açık kahverengi
-  static const Color darkorange = Color.fromARGB(
-    255,
-    252,
-    112,
-    73,
-  ); // Koyu turuncu / Kırmızımsı
+  static const Color darkorange = Color(0xFFFC7049); // Koyu turuncu / Kırmızımsı
 }

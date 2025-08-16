@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:paceup/routing/paths.dart';
 
 Widget weeklyTCard(
   BuildContext context,
@@ -22,23 +24,34 @@ Widget weeklyTCard(
           child: Row(
             spacing: 6,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: [0.0, 0.5, 1.0],
-                    colors: [
-                      Color.fromARGB(255, 79, 157, 110), // 0%
-                      Color.fromARGB(255, 102, 207, 144), // 50%
-                      Color.fromARGB(255, 79, 157, 110), // 100%
-                    ],
+              GestureDetector(
+                onTap: () {
+                  context.push(Paths.gopage);
+                },
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      stops: [0.0, 0.5, 1.0],
+                      colors: [
+                        Color.fromARGB(255, 79, 157, 110), // 0%
+                        Color.fromARGB(255, 102, 207, 144), // 50%
+                        Color.fromARGB(255, 79, 157, 110), // 100%
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12), // varsa
                   ),
-                  borderRadius: BorderRadius.circular(12), // varsa
+                  child: Center(
+                    child: Icon(
+                      Icons.play_arrow,
+                      size: 25,
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                    ),
+                  ),
                 ),
-                child: Image.asset('assets/icons/Target.png'),
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,

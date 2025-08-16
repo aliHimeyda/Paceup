@@ -1,8 +1,10 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 
 class GoPage extends StatefulWidget {
   const GoPage({super.key});
@@ -12,17 +14,47 @@ class GoPage extends StatefulWidget {
 }
 
 class _GoPageState extends State<GoPage> {
-  late final Alignment _randomAlign;
-
   @override
   void initState() {
     super.initState();
-    final r = Random();
-    // -0.8 .. 0.8 arası rastgele hizalama (ekranın kenarlarına çok yapışmasın)
-    _randomAlign = Alignment(
-      -0.8 + r.nextDouble() * 1.6,
-      -0.6 + r.nextDouble() * 1.2,
-    );
+  }
+
+  Future<Position> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 
   @override
@@ -30,152 +62,202 @@ class _GoPageState extends State<GoPage> {
     final go = context.watch<GoProvider>();
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // GOOGLE MAP
-          const _GoMap(),
+      body: FutureBuilder<Position>(
+        future: determinePosition(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Provider.of<Loader>(
+                context,
+                listen: false,
+              ).loader(context),
+            );
+          }
+          if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('konum bilgisi yok'));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('hata olustu'));
+          }
+          final Position pos = snapshot.data;
+          return Stack(
+            children: [
+              // GOOGLE MAP
+              const _GoMap(),
 
-          // Sol üst geri butonu (beyaz daire + ince border)
-          Positioned(
-            top: 16 + MediaQuery.of(context).padding.top,
-            left: 16,
-            child: _CircleButton(
-              icon: Icons.arrow_back_ios_new,
-              onTap: () => Navigator.of(context).maybePop(),
-            ),
-          ),
-
-          // ÜST SAĞ SHARE DAİRESİ ***YOK*** (istenmedi)
-
-          // Rastgele mavi daire (map marker DEĞİL)
-          Align(
-            alignment: _randomAlign,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // "1 km more" siyah etiket
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A0A0D),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    '1 km more',
-                    style: TextStyle(color: Colors.white, fontSize: 11),
-                  ),
+              // Sol üst geri butonu (beyaz daire + ince border)
+              Positioned(
+                top: 16 + MediaQuery.of(context).padding.top,
+                left: 16,
+                child: _CircleButton(
+                  icon: Icons.arrow_back_ios_new,
+                  onTap: () => Navigator.of(context).maybePop(),
                 ),
-                const SizedBox(height: 6),
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.blue.shade600,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.shade300.withOpacity(.6),
-                        blurRadius: 12,
-                        spreadRadius: 6,
+              ),
+              // Rastgele mavi daire (map marker DEĞİL)
+              Align(
+                alignment: Alignment.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // "1 km more" siyah etiket
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
                       ),
-                    ],
-                  ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A0A0D),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        pos.latitude.toString(),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).primaryColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(
+                              255,
+                              249,
+                              169,
+                              140,
+                            ).withOpacity(.6),
+                            blurRadius: 12,
+                            spreadRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-
-          // ALT SAYFA (bottom sheet görünümü)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 0),
-              padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
-              width: 390,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: const [
-                  BoxShadow(
-                    offset: Offset(8, -8),
-                    blurRadius: 24,
-                    color: Color.fromRGBO(194, 194, 194, 0.15),
-                  ),
-                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Kart grid
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _StatsGrid(
-                      runningTime: go.elapsedText,
-                      avgPace: '${go.avgPaceMins.toStringAsFixed(0)} mins',
-                      distance: '${go.distanceKm.toStringAsFixed(0)} km',
-                      calories: '${go.calories} kcal',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
 
-                  // Share butonu (altta)
-                  TextButton.icon(
-                    onPressed: () {
-                      // TODO: paylaşım
-                    },
-                    icon: const Icon(Icons.share_outlined),
-                    label: const Text('Share'),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Continue/Stop ve Finish
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0455BF), // Primary/500
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            onPressed: go.toggle,
-                            icon: Icon(go.isRunning ? Icons.stop : Icons.play_arrow),
-                            label: Text(go.isRunning ? 'Stop' : 'Continue Running'),
-                          ),
+              Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 0),
+                      padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+                      width: 390,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
                         ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              side: BorderSide(color: const Color(0xFF0455BF).withOpacity(.6)),
-                            ),
-                            onPressed: () {
-                              // Finish → timer durur, istersen resetle
-                              go.stop();
-                              // go.reset();
-                            },
-                            child: const Text('Finish'),
+                        boxShadow: const [
+                          BoxShadow(
+                            offset: Offset(8, -8),
+                            blurRadius: 24,
+                            color: Color.fromRGBO(194, 194, 194, 0.15),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _StatsGrid(
+                              runningTime: go.elapsedText,
+                              avgPace:
+                                  '${go.avgPaceMins.toStringAsFixed(0)} mins',
+                              distance:
+                                  '${go.distanceKm.toStringAsFixed(0)} km',
+                              calories: '${go.calories} kcal',
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(
+                                        context,
+                                      ).primaryColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    onPressed: go.toggle,
+                                    icon: Icon(
+                                      go.isRunning
+                                          ? Icons.stop
+                                          : Icons.play_arrow,
+                                      color: Theme.of(
+                                        context,
+                                      ).scaffoldBackgroundColor,
+                                    ),
+                                    label: Text(
+                                      go.isRunning
+                                          ? 'Stop'
+                                          : 'Continue Running',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      side: BorderSide(
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      go.stop();
+                                    },
+                                    child: Text(
+                                      'Finish',
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  )
+                  .animate(delay: 120.ms)
+                  .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+                  .move(
+                    begin: const Offset(0, 120),
+                    end: Offset.zero,
+                    duration: 520.ms,
+                    curve: Curves.easeOutBack,
+                  )
+                  .then()
+                  .move(
+                    begin: const Offset(0, -6),
+                    end: Offset.zero,
+                    duration: 180.ms,
+                    curve: Curves.easeInOut,
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -190,7 +272,7 @@ class _GoMap extends StatelessWidget {
     return const GoogleMap(
       initialCameraPosition: CameraPosition(
         target: LatLng(41.015137, 28.979530), // İstanbul örnek
-        zoom: 5,
+        zoom: 7,
       ),
       myLocationEnabled: false,
       zoomControlsEnabled: false,
@@ -222,7 +304,9 @@ class _CircleButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: const Color.fromRGBO(142, 142, 144, 0.15)),
+            border: Border.all(
+              color: const Color.fromRGBO(142, 142, 144, 0.15),
+            ),
           ),
           alignment: Alignment.center,
           child: const Icon(Icons.arrow_back_ios_new, size: 18),
@@ -248,7 +332,12 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget card(String title, String value, {IconData? icon, Color? valueColor}) {
+    Widget card(
+      String title,
+      String value, {
+      IconData? icon,
+      Color? valueColor,
+    }) {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -257,20 +346,28 @@ class _StatsGrid extends StatelessWidget {
           border: Border.all(color: Colors.black12),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: Colors.grey.shade700),
-              const SizedBox(height: 6),
-            ],
-            Text(title, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
-            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 1,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 16, color: Colors.grey.shade700),
+                  const SizedBox(height: 6),
+                ],
+                Text(title, style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 6),
+              ],
+            ),
             Text(
               value,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: valueColor ?? Colors.black,
+                color:
+                    valueColor ?? Theme.of(context).textTheme.bodyLarge!.color,
               ),
             ),
           ],
@@ -288,7 +385,12 @@ class _StatsGrid extends StatelessWidget {
         childAspectRatio: 1.9,
       ),
       children: [
-        card('Running Time', runningTime, icon: Icons.timer_outlined, valueColor: Colors.red),
+        card(
+          'Running Time',
+          runningTime,
+          icon: Icons.timer_outlined,
+          valueColor: Colors.red,
+        ),
         card('AVG Pace', avgPace, icon: Icons.bolt_outlined),
         card('Distance', distance, icon: Icons.directions_run),
         card('Calories', calories, icon: Icons.local_fire_department_outlined),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:paceup/core/services/loader.dart';
+import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/core/theme/colors.dart';
 import 'package:paceup/data/datasources/remote_datasource/firebaseservices.dart';
 import 'package:paceup/features/login_page/loginpageprovider.dart';

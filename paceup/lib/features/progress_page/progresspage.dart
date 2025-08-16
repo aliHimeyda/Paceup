@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:paceup/core/services/loader.dart';
+import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/progress_page/progresspageprovider.dart';
 import 'package:paceup/widgets/addCard.dart';
 import 'package:paceup/widgets/eventCard.dart';

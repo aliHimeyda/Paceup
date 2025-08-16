@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:paceup/core/services/loader.dart';
+import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/core/theme/apptheme.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
 import 'package:paceup/features/challenges_page/challengespageprovider.dart';

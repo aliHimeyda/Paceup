@@ -9,6 +9,6 @@ class Paths {
   static const String progressresultpage = '/progressresultpage';
   static const String promotionpage = '/promotionpage';
   static const String gopage = '/gopage';
-  static const String runningeventsdetailspage = '/runningeventsdetailspage';
+  static const String comingsoonpage = '/comingsoonpage';
   static const String logopage = '/logopage';
 }
