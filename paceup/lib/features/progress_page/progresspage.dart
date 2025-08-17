@@ -107,8 +107,13 @@ class _ProgresspageState extends State<Progresspage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                watchprovider.selectedDayIndex != 3
-                    ? weeklyTCard(context, 75, 59, 70, DateTime.now())
+                watchprovider.goals.goals[watchprovider.selectedDayIndex] !=
+                        null
+                    ? weeklyTCard(
+                            context,
+                            provider.goals.goals[watchprovider
+                                .selectedDayIndex]!,
+                          )
                           .animate()
                           .slideX(
                             begin: -0.4,

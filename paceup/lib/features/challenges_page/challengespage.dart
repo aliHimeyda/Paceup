@@ -18,7 +18,14 @@ class ChallengesPage extends StatefulWidget {
 }
 
 class _ChallengesPageState extends State<ChallengesPage> {
+  late Future<void> metod;
   Future<void> searching() async {}
+  @override
+  void initState() {
+    super.initState();
+    metod = searching();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<Challengespageprovider>(
@@ -34,7 +41,7 @@ class _ChallengesPageState extends State<ChallengesPage> {
             SearchBarW(),
             SizedBox(height: 24),
             FutureBuilder<void>(
-              future: searching(),
+              future: metod,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(

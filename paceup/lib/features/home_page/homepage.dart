@@ -17,6 +17,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final watchprovider = context.watch<HomepageProvider>();
+    final provider = Provider.of<HomepageProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
@@ -86,13 +87,7 @@ class HomeScreen extends StatelessWidget {
             Text("today's goal", style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 15),
             // Weekly Target
-            weeklyTCard(
-              context,
-              watchprovider.progress,
-              59,
-              60,
-              watchprovider.now,
-            ),
+            weeklyTCard(context,provider.goal),
             const SizedBox(height: 24),
 
             // 3. Monthly Stats

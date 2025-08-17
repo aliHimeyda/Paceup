@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:paceup/data/models/dailyGoal.dart';
 import 'package:paceup/routing/paths.dart';
 
 Widget weeklyTCard(
   BuildContext context,
-  double progress,
-  double endingkm,
-  double remainderkm,
-  DateTime time,
+  Dailygoal goal
 ) {
+  final dayNames = ['Monday', 'Tuesday', 'Wedensday', 'Thursday', 'Friday', 'Saturday','Sunday'];
+  final currentday = dayNames[goal.time.weekday - 1];
   return Container(
     height: 173,
     padding: const EdgeInsets.all(20),
@@ -59,7 +59,7 @@ Widget weeklyTCard(
                 spacing: 2,
                 children: [
                   Text(
-                    "Weekly Target",
+                    "${currentday} Target",
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Row(
@@ -67,11 +67,11 @@ Widget weeklyTCard(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
-                        "$endingkm km / ",
+                        "${goal.endingkm} km / ",
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Text(
-                        "$remainderkm km",
+                        "${goal.remainderkm}. km",
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
@@ -83,13 +83,13 @@ Widget weeklyTCard(
                 alignment: Alignment.center,
                 children: [
                   CircularProgressIndicator(
-                    value: progress,
+                    value: goal.progress(),
                     color: Colors.white,
                     backgroundColor: Colors.white30,
                     strokeWidth: 4,
                   ),
                   Text(
-                    '${(progress * 100).toInt()}%',
+                    '${(goal.progress() * 100).toInt()}%',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ],
@@ -122,7 +122,7 @@ Widget weeklyTCard(
                     ],
                   ),
                   Text(
-                    "${time.hour}h:${time.minute}m:${time.second}s",
+                    "${goal.time.hour}h:${goal.time.minute}m:${goal.time.second}s",
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -146,7 +146,7 @@ Widget weeklyTCard(
                     ],
                   ),
                   Text(
-                    "$endingkm km",
+                    "${goal.endingkm} km",
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -170,7 +170,7 @@ Widget weeklyTCard(
                     ],
                   ),
                   Text(
-                    "1,203 kcal",
+                    "${goal.kalory} kcal",
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],

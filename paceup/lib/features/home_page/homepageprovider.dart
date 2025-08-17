@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:paceup/data/models/dailyGoal.dart';
 
 class HomepageProvider with ChangeNotifier {
   final now = DateTime.now();
-  double get progress => 2.25 / 3; // 2h15m = 2.25 hours out of 3
+  Dailygoal goal = Dailygoal(endingkm: 50, remainderkm: 70, time: DateTime.now(),kalory: 1000 );
   
   
 }

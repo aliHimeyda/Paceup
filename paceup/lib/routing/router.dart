@@ -64,13 +64,7 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        StatefulShellBranch(
-          navigatorKey:
-              GlobalKey<NavigatorState>(), // Alt navigator için yeni key
-          routes: [
-            GoRoute(path: Paths.gopage, builder: (context, state) => GoPage()),
-          ],
-        ),
+      
         StatefulShellBranch(
           navigatorKey:
               GlobalKey<NavigatorState>(), // Alt navigator için yeni key
@@ -132,6 +126,11 @@ final GoRouter router = GoRouter(
           ],
         ),
       ],
+    ),
+     GoRoute(
+      path: Paths.gopage,
+      parentNavigatorKey: routerkey, // shell’in ÜSTÜNDE aç
+      builder: (context, state) => const GoPage(),
     ),
   ],
 );

@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:paceup/core/utils/drawtrackpng.dart';
+import 'package:paceup/core/utils/getcurrentposition.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
 import 'package:provider/provider.dart';
@@ -14,56 +19,36 @@ class GoPage extends StatefulWidget {
 }
 
 class _GoPageState extends State<GoPage> {
+  StreamSubscription<Position>? sub;
+  late Future<Position> getposition;
+  late GoProvider _go; // cache
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _go = context.read<GoProvider>(); // bir kez yakala
+  }
+
   @override
   void initState() {
     super.initState();
+    getposition = determinePosition();
   }
 
-  Future<Position> determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
-      );
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+  @override
+  void dispose() {
+    _go.stopsub();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final go = context.watch<GoProvider>();
+    final provider = Provider.of<GoProvider>(context, listen: false);
 
     return Scaffold(
       body: FutureBuilder<Position>(
-        future: determinePosition(),
+        future: getposition,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -74,16 +59,19 @@ class _GoPageState extends State<GoPage> {
             );
           }
           if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('konum bilgisi yok'));
+            return Center(child: Text('Please start your gps service'));
           }
           if (snapshot.hasError) {
-            return Center(child: Text('hata olustu'));
+            return Center(child: Text('please try again for next time'));
           }
           final Position pos = snapshot.data;
+          provider.latlonPositionsList.add(LatLng(pos.latitude, pos.longitude));
+
+          provider.addEdge(LatLng(pos.latitude, pos.longitude), null);
           return Stack(
             children: [
               // GOOGLE MAP
-              const _GoMap(),
+              _GoMap(lat: pos.latitude, lon: pos.longitude),
 
               // Sol üst geri butonu (beyaz daire + ince border)
               Positioned(
@@ -94,60 +82,15 @@ class _GoPageState extends State<GoPage> {
                   onTap: () => Navigator.of(context).maybePop(),
                 ),
               ),
-              // Rastgele mavi daire (map marker DEĞİL)
-              Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // "1 km more" siyah etiket
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0A0A0D),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        pos.latitude.toString(),
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Theme.of(context).primaryColor,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color.fromARGB(
-                              255,
-                              249,
-                              169,
-                              140,
-                            ).withOpacity(.6),
-                            blurRadius: 12,
-                            spreadRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
               Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 0),
-                      padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+                      padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                       width: 390,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(24),
                         ),
@@ -162,6 +105,14 @@ class _GoPageState extends State<GoPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          SizedBox(
+                            width: 100,
+                            child: Divider(
+                              thickness: 7,
+                              radius: BorderRadius.all(Radius.circular(5)),
+                              color: Theme.of(context).canvasColor,
+                            ),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: _StatsGrid(
@@ -176,10 +127,13 @@ class _GoPageState extends State<GoPage> {
                           const SizedBox(height: 20),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 SizedBox(
-                                  width: double.infinity,
+                                  width:
+                                      MediaQuery.of(context).size.width / 2 -
+                                      20,
                                   height: 52,
                                   child: ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
@@ -190,7 +144,15 @@ class _GoPageState extends State<GoPage> {
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
-                                    onPressed: go.toggle,
+                                    onPressed: () {
+                                      if (go.isRunning) {
+                                        provider.stop();
+                                        provider.stopsub();
+                                      } else {
+                                        provider.start();
+                                        provider.startListening();
+                                      }
+                                    },
                                     icon: Icon(
                                       go.isRunning
                                           ? Icons.stop
@@ -200,9 +162,7 @@ class _GoPageState extends State<GoPage> {
                                       ).scaffoldBackgroundColor,
                                     ),
                                     label: Text(
-                                      go.isRunning
-                                          ? 'Stop'
-                                          : 'Continue Running',
+                                      go.isRunning ? 'Stop' : 'Continue',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.titleMedium,
@@ -211,7 +171,9 @@ class _GoPageState extends State<GoPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 SizedBox(
-                                  width: double.infinity,
+                                  width:
+                                      MediaQuery.of(context).size.width / 2 -
+                                      20,
                                   height: 52,
                                   child: OutlinedButton(
                                     style: OutlinedButton.styleFrom(
@@ -222,8 +184,36 @@ class _GoPageState extends State<GoPage> {
                                         color: Theme.of(context).primaryColor,
                                       ),
                                     ),
-                                    onPressed: () {
-                                      go.stop();
+                                    onPressed: () async {
+                                      final png = await drawTrackPng(
+                                        context
+                                            .read<GoProvider>()
+                                            .latlonPositionsList,
+                                        size: const Size(500, 500),
+                                        padding: 20,
+                                        strokeColor: Colors.white,
+                                        strokeWidth: 6,
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).primaryColor, // veya Colors.transparent
+                                      );
+                                      go.finish();
+                                      context.pop();
+                                      if (png != null) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => Dialog(
+                                            child: SizedBox(
+                                              width: 260,
+                                              height: 260,
+                                              child: Image.memory(
+                                                png,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
                                     },
                                     child: Text(
                                       'Finish',
@@ -264,22 +254,51 @@ class _GoPageState extends State<GoPage> {
 }
 
 // Google Map widget (zoom=5)
-class _GoMap extends StatelessWidget {
-  const _GoMap();
+class _GoMap extends StatefulWidget {
+  final double lat;
+  final double lon;
+  const _GoMap({required this.lat, required this.lon});
+
+  @override
+  State<_GoMap> createState() => _GoMapState();
+}
+
+class _GoMapState extends State<_GoMap> {
+  GoogleMapController? _c;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _c?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(41.015137, 28.979530), // İstanbul örnek
-        zoom: 7,
+    return SizedBox(
+      height: (MediaQuery.of(context).size.height / 3) * 2,
+      child: GoogleMap(
+        onMapCreated: (controller) => _c = controller,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(widget.lat, widget.lon), // İstanbul örnek
+
+          zoom: 17,
+        ),
+        polylines: context.watch<GoProvider>().polylines,
+        markers: context.watch<GoProvider>().markers,
+        mapType: MapType.terrain,
+        myLocationEnabled: false,
+        zoomControlsEnabled: false,
+        zoomGesturesEnabled: false,
+        myLocationButtonEnabled: false,
+        compassEnabled: false,
+        mapToolbarEnabled: false,
+        buildingsEnabled: true,
       ),
-      myLocationEnabled: false,
-      zoomControlsEnabled: false,
-      myLocationButtonEnabled: false,
-      compassEnabled: false,
-      mapToolbarEnabled: false,
-      buildingsEnabled: true,
     );
   }
 }

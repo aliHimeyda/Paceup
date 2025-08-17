@@ -1,19 +1,25 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GoProvider extends ChangeNotifier {
   // UI değerleri (örnek defaultlar)
   Duration _elapsed = Duration.zero;
-  double avgPaceMins = 65;   // dakikada ortalama pace
-  double distanceKm  = 48;   // km
-  int calories       = 621;  // kcal
-
+  double avgPaceMins = 65; // dakikada ortalama pace
+  double distanceKm = 48; // km
+  int calories = 621; // kcal
+  Set<Polyline> polylines = {};
+  Set<Marker> markers = {};
   Timer? _timer;
   bool _running = false;
-
+  StreamSubscription<Position>? sub;
   bool get isRunning => _running;
   Duration get elapsed => _elapsed;
-
+  final id = const PolylineId('route');
+  List<LatLng> latlonPositionsList = [];
+  LatLng? currentLatlng;
   String get elapsedText {
     final h = _elapsed.inHours.toString().padLeft(2, '0');
     final m = (_elapsed.inMinutes % 60).toString().padLeft(2, '0');
@@ -38,11 +44,80 @@ class GoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggle() => _running ? stop() : start();
-
   void reset() {
     stop();
     _elapsed = Duration.zero;
     notifyListeners();
+  }
+
+  void addEdge(LatLng a, LatLng? b) {
+    debugPrint(
+      'a: $a  , b: $b',
+    );
+    final line = Polyline(
+      polylineId: id,
+      points: [a, b ?? a], // iki nokta arası kenar
+      width: 5, // kalınlık
+      color: const Color(0xFFFC7049), // renk
+      geodesic: true, // Dünya eğriliğine uygun (büyük mesafede daha doğru)
+      zIndex: 1,
+    );
+    polylines = {...polylines, line};
+    markers = {
+      Marker(
+        markerId: const MarkerId('me'),
+        position: b ?? a, // her event’te güncel konum
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        anchor: const Offset(0.6, 0.6),
+      ),
+    };
+    notifyListeners();
+  }
+
+  Future<void> startListening() async {
+    // Servis ve izin kontrolü (özet)
+    if (!await Geolocator.isLocationServiceEnabled()) return;
+    var perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied)
+      perm = await Geolocator.requestPermission();
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever)
+      return;
+
+    // Platformdan bağımsız ayarlar
+    const settings = LocationSettings(
+      accuracy: LocationAccuracy.best, // hassasiyet (pil tüketimi artar)
+      distanceFilter: 10, // en az 10 m hareket olursa event gönder
+    );
+    if (sub != null) return; // ikinci kez başlatma
+    sub = Geolocator.getPositionStream(locationSettings: settings).listen((
+      pos,
+    ) {
+      // HAREKET OLDU → yeni konum burada
+      debugPrint(
+        'hareket oldu , yeni position : $pos,yeni boyut ${latlonPositionsList.length}',
+      );
+      // pos.latitude, pos.longitude, pos.speed, pos.heading, pos.timestamp...
+      final newlatlon = LatLng(pos.latitude, pos.longitude);
+
+      addEdge(latlonPositionsList[latlonPositionsList.length - 1], newlatlon);
+      latlonPositionsList.add(newlatlon);
+
+      notifyListeners();
+    });
+  }
+
+  Future<void> stopsub() async {
+    await sub?.cancel();
+    sub = null;
+  }
+
+  Future<void> finish() async {
+    await sub?.cancel();
+    sub = null;
+    reset();
+    _elapsed = Duration.zero;
+    polylines = {};
+    latlonPositionsList.clear();
   }
 }

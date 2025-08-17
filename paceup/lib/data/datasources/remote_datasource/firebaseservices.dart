@@ -373,7 +373,7 @@ Future<void> signinwithGoogle(BuildContext context) async {
   final userCredential = await signInWithGoogle();
   if (userCredential != null) {
     print('Giriş Başarılı: ${userCredential.user?.displayName}');
-    context.push(Paths.homepage);
+    context.go(Paths.homepage);
   } else {
     print('Giriş iptal edildi veya hata oluştu');
   }
