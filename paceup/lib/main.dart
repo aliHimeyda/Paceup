@@ -54,6 +54,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => Searchwprovider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         ChangeNotifierProvider(create: (_) => GoProvider()),
+        ChangeNotifierProvider(create: (_) => GoValuesprovider()),
       ],
       child: MyApp(),
     ),

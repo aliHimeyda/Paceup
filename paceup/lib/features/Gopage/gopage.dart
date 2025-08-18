@@ -11,69 +11,22 @@ import 'package:paceup/features/Gopage/goprovider.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 
-class GoPage extends StatefulWidget {
+class GoPage extends StatelessWidget {
   const GoPage({super.key});
 
   @override
-  State<GoPage> createState() => _GoPageState();
-}
-
-class _GoPageState extends State<GoPage> {
-  StreamSubscription<Position>? sub;
-  late Future<Position> getposition;
-  late GoProvider _go; // cache
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _go = context.read<GoProvider>(); // bir kez yakala
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getposition = determinePosition();
-  }
-
-  @override
-  void dispose() {
-    _go.stopsub();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final go = context.watch<GoProvider>();
-    final provider = Provider.of<GoProvider>(context, listen: false);
+    final positionprovider = context.read<GoProvider>();
+    final valuesprovider = context.read<GoValuesprovider>();
 
-    return Scaffold(
-      body: FutureBuilder<Position>(
-        future: getposition,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Provider.of<Loader>(
-                context,
-                listen: false,
-              ).loader(context),
-            );
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('Please start your gps service'));
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('please try again for next time'));
-          }
-          final Position pos = snapshot.data;
-          provider.latlonPositionsList.add(LatLng(pos.latitude, pos.longitude));
-
-          provider.addEdge(LatLng(pos.latitude, pos.longitude), null);
-          return Stack(
+    return Consumer<GoValuesprovider>(
+      child: _GoMap(),
+      builder: (context, v, mapChild) {
+        return Scaffold(
+          body: Stack(
             children: [
-              // GOOGLE MAP
-              _GoMap(lat: pos.latitude, lon: pos.longitude),
+              mapChild!,
 
-              // Sol üst geri butonu (beyaz daire + ince border)
               Positioned(
                 top: 16 + MediaQuery.of(context).padding.top,
                 left: 16,
@@ -116,12 +69,11 @@ class _GoPageState extends State<GoPage> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: _StatsGrid(
-                              runningTime: go.elapsedText,
+                              runningTime: v.elapsedText,
                               avgPace:
-                                  '${go.avgPaceMins.toStringAsFixed(0)} mins',
-                              distance:
-                                  '${go.distanceKm.toStringAsFixed(0)} km',
-                              calories: '${go.calories} kcal',
+                                  '${v.avgPaceMins.toStringAsFixed(0)} mins',
+                              distance: '${v.distanceKm.toStringAsFixed(0)} km',
+                              calories: '${v.calories} kcal',
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -145,16 +97,21 @@ class _GoPageState extends State<GoPage> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      if (go.isRunning) {
-                                        provider.stop();
-                                        provider.stopsub();
+                                      debugPrint('girdi');
+                                      if (valuesprovider.isRunning) {
+                                        debugPrint('ilk kosula girdi girdi');
+
+                                        valuesprovider.stop();
+                                        positionprovider.stopsub();
                                       } else {
-                                        provider.start();
-                                        provider.startListening();
+                                        debugPrint('ikinci kosula girdi');
+
+                                        valuesprovider.start();
+                                        positionprovider.startListening();
                                       }
                                     },
                                     icon: Icon(
-                                      go.isRunning
+                                      v.isRunning
                                           ? Icons.stop
                                           : Icons.play_arrow,
                                       color: Theme.of(
@@ -162,7 +119,7 @@ class _GoPageState extends State<GoPage> {
                                       ).scaffoldBackgroundColor,
                                     ),
                                     label: Text(
-                                      go.isRunning ? 'Stop' : 'Continue',
+                                      v.isRunning ? 'Stop' : 'Continue',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.titleMedium,
@@ -197,7 +154,8 @@ class _GoPageState extends State<GoPage> {
                                           context,
                                         ).primaryColor, // veya Colors.transparent
                                       );
-                                      go.finish();
+                                      valuesprovider.finish();
+                                      positionprovider.finish();
                                       context.pop();
                                       if (png != null) {
                                         showDialog(
@@ -246,58 +204,76 @@ class _GoPageState extends State<GoPage> {
                     curve: Curves.easeInOut,
                   ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
 // Google Map widget (zoom=5)
 class _GoMap extends StatefulWidget {
-  final double lat;
-  final double lon;
-  const _GoMap({required this.lat, required this.lon});
+  const _GoMap();
 
   @override
   State<_GoMap> createState() => _GoMapState();
 }
 
 class _GoMapState extends State<_GoMap> {
-  GoogleMapController? _c;
+  late Future<Position> getposition;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _c?.dispose();
-    super.dispose();
+    getposition = determinePosition();
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<GoProvider>(context, listen: false);
     return SizedBox(
       height: (MediaQuery.of(context).size.height / 3) * 2,
-      child: GoogleMap(
-        onMapCreated: (controller) => _c = controller,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(widget.lat, widget.lon), // İstanbul örnek
+      child: FutureBuilder<Position>(
+        future: getposition,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Provider.of<Loader>(
+                context,
+                listen: false,
+              ).loader(context),
+            );
+          }
+          if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('Please start your gps service'));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('please try again for next time'));
+          }
+          final Position pos = snapshot.data;
+          provider.latlonPositionsList.add(LatLng(pos.latitude, pos.longitude));
 
-          zoom: 17,
-        ),
-        polylines: context.watch<GoProvider>().polylines,
-        markers: context.watch<GoProvider>().markers,
-        mapType: MapType.terrain,
-        myLocationEnabled: false,
-        zoomControlsEnabled: false,
-        zoomGesturesEnabled: false,
-        myLocationButtonEnabled: false,
-        compassEnabled: false,
-        mapToolbarEnabled: false,
-        buildingsEnabled: true,
+          return Consumer<GoProvider>(
+            builder: (context, v, child) {
+              return GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(pos.latitude, pos.longitude), // İstanbul örnek
+                  zoom: 17,
+                ),
+                polylines: v.polylines,
+                markers: v.markers,
+                mapType: MapType.terrain,
+                myLocationEnabled: false,
+                zoomControlsEnabled: false,
+                zoomGesturesEnabled: false,
+                myLocationButtonEnabled: false,
+                compassEnabled: false,
+                mapToolbarEnabled: false,
+                buildingsEnabled: true,
+              );
+            },
+          );
+        },
       ),
     );
   }

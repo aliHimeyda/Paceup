@@ -4,22 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class GoProvider extends ChangeNotifier {
+class GoValuesprovider extends ChangeNotifier {
   // UI değerleri (örnek defaultlar)
   Duration _elapsed = Duration.zero;
   double avgPaceMins = 65; // dakikada ortalama pace
   double distanceKm = 48; // km
   int calories = 621; // kcal
-  Set<Polyline> polylines = {};
-  Set<Marker> markers = {};
   Timer? _timer;
   bool _running = false;
-  StreamSubscription<Position>? sub;
+
   bool get isRunning => _running;
   Duration get elapsed => _elapsed;
-  final id = const PolylineId('route');
-  List<LatLng> latlonPositionsList = [];
-  LatLng? currentLatlng;
   String get elapsedText {
     final h = _elapsed.inHours.toString().padLeft(2, '0');
     final m = (_elapsed.inMinutes % 60).toString().padLeft(2, '0');
@@ -50,13 +45,31 @@ class GoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addEdge(LatLng a, LatLng? b) {
+  Future<void> finish() async {
+    reset();
+    _elapsed = Duration.zero;
+  }
+}
+
+class GoProvider extends ChangeNotifier {
+  Set<Polyline> polylines = {};
+  Set<Marker> markers = {};
+
+  StreamSubscription<Position>? sub;
+
+  List<LatLng> latlonPositionsList = [];
+  LatLng? currentLatlng;
+
+  void addEdge(LatLng a, LatLng b) {
     debugPrint(
-      'a: $a  , b: $b',
+      'a: $a  , b: $b  ==== yeni latlen boyutu : ${latlonPositionsList.length}',
+    );
+    final id = PolylineId(
+      'route_${a.latitude}_${b.latitude}_${latlonPositionsList.length}',
     );
     final line = Polyline(
       polylineId: id,
-      points: [a, b ?? a], // iki nokta arası kenar
+      points: [a, b], // iki nokta arası kenar
       width: 5, // kalınlık
       color: const Color(0xFFFC7049), // renk
       geodesic: true, // Dünya eğriliğine uygun (büyük mesafede daha doğru)
@@ -66,7 +79,7 @@ class GoProvider extends ChangeNotifier {
     markers = {
       Marker(
         markerId: const MarkerId('me'),
-        position: b ?? a, // her event’te güncel konum
+        position: b, // her event’te güncel konum
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
         anchor: const Offset(0.6, 0.6),
       ),
@@ -87,7 +100,7 @@ class GoProvider extends ChangeNotifier {
     // Platformdan bağımsız ayarlar
     const settings = LocationSettings(
       accuracy: LocationAccuracy.best, // hassasiyet (pil tüketimi artar)
-      distanceFilter: 10, // en az 10 m hareket olursa event gönder
+      distanceFilter: 5, // en az 10 m hareket olursa event gönder
     );
     if (sub != null) return; // ikinci kez başlatma
     sub = Geolocator.getPositionStream(locationSettings: settings).listen((
@@ -95,7 +108,7 @@ class GoProvider extends ChangeNotifier {
     ) {
       // HAREKET OLDU → yeni konum burada
       debugPrint(
-        'hareket oldu , yeni position : $pos,yeni boyut ${latlonPositionsList.length}',
+        'hareket oldu , yeni position : $pos,yeni boyut ${latlonPositionsList.length} ===================================================en son value : ${latlonPositionsList}',
       );
       // pos.latitude, pos.longitude, pos.speed, pos.heading, pos.timestamp...
       final newlatlon = LatLng(pos.latitude, pos.longitude);
@@ -115,8 +128,7 @@ class GoProvider extends ChangeNotifier {
   Future<void> finish() async {
     await sub?.cancel();
     sub = null;
-    reset();
-    _elapsed = Duration.zero;
+
     polylines = {};
     latlonPositionsList.clear();
   }
