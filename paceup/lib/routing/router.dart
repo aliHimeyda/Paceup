@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:paceup/bottomnavigation.dart';
@@ -64,14 +66,17 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-      
+
         StatefulShellBranch(
           navigatorKey:
               GlobalKey<NavigatorState>(), // Alt navigator için yeni key
           routes: [
             GoRoute(
               path: Paths.progressresultpage,
-              builder: (context, state) => ProgressResultPage(),
+              builder: (context, state) {
+                final image = state.extra as Uint8List;
+                return ProgressResultPage(resultimage: image);
+              },
             ),
           ],
         ),
@@ -127,7 +132,7 @@ final GoRouter router = GoRouter(
         ),
       ],
     ),
-     GoRoute(
+    GoRoute(
       path: Paths.gopage,
       parentNavigatorKey: routerkey, // shell’in ÜSTÜNDE aç
       builder: (context, state) => const GoPage(),

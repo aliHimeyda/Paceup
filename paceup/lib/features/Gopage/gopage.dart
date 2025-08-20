@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:paceup/core/utils/drawtrackpng.dart';
 import 'package:paceup/core/utils/getcurrentposition.dart';
+import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,7 @@ class GoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final positionprovider = context.read<GoProvider>();
     final valuesprovider = context.read<GoValuesprovider>();
-
+    final loaderProvider = context.watch<Loader>();
     return Consumer<GoValuesprovider>(
       child: _GoMap(),
       builder: (context, v, mapChild) {
@@ -142,6 +143,14 @@ class GoPage extends StatelessWidget {
                                       ),
                                     ),
                                     onPressed: () async {
+                                      Provider.of<Loader>(
+                                        context,
+                                        listen: false,
+                                      ).loading = true;
+                                      Provider.of<Loader>(
+                                        context,
+                                        listen: false,
+                                      ).change();
                                       final png = await drawTrackPng(
                                         context
                                             .read<GoProvider>()
@@ -156,22 +165,45 @@ class GoPage extends StatelessWidget {
                                       );
                                       valuesprovider.finish();
                                       positionprovider.finish();
+                                      Provider.of<Loader>(
+                                        context,
+                                        listen: false,
+                                      ).loading = false;
+                                      Provider.of<Loader>(
+                                        context,
+                                        listen: false,
+                                      ).change();
+                                      final sizeInKb =
+                                          png!.lengthInBytes / 1024;
+                                      final sizeInMb =
+                                          png.lengthInBytes / (1024 * 1024);
+                                      print(
+                                        "Boyut: ${sizeInKb.toStringAsFixed(2)} KB",
+                                      );
+                                      print(
+                                        "Boyut: ${sizeInMb.toStringAsFixed(2)} MB",
+                                      );
+
                                       context.pop();
-                                      if (png != null) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => Dialog(
-                                            child: SizedBox(
-                                              width: 260,
-                                              height: 260,
-                                              child: Image.memory(
-                                                png,
-                                                fit: BoxFit.contain,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
+                                      context.push(
+                                        Paths.progressresultpage,
+                                        extra: png,
+                                      );
+                                      // if (png != null) {
+                                      //   showDialog(
+                                      //     context: context,
+                                      //     builder: (_) => Dialog(
+                                      //       child: SizedBox(
+                                      //         width: 260,
+                                      //         height: 260,
+                                      //         child: Image.memory(
+                                      //           png,
+                                      //           fit: BoxFit.contain,
+                                      //         ),
+                                      //       ),
+                                      //     ),
+                                      //   );
+                                      // }
                                     },
                                     child: Text(
                                       'Finish',
@@ -203,6 +235,9 @@ class GoPage extends StatelessWidget {
                     duration: 180.ms,
                     curve: Curves.easeInOut,
                   ),
+              loaderProvider.loading
+                  ? Provider.of<Loader>(context, listen: false).loader(context)
+                  : SizedBox(),
             ],
           ),
         );
