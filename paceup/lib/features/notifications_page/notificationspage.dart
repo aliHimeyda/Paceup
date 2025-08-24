@@ -10,6 +10,7 @@ class NotificationsPage extends StatelessWidget {
     final provider = context.watch<NotificationsProvider>();
 
     return Scaffold(
+      backgroundColor:Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [

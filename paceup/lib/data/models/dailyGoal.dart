@@ -1,17 +1,19 @@
 class Dailygoal {
   double endingkm;
-  double remainderkm;
-  double kalory;
+  double totalkm;
+  double calory;
   DateTime time;
+  DateTime totaltime;
   Dailygoal({
     required this.endingkm,
-    required this.remainderkm,
+    required this.totalkm,
     required this.time,
-    required this.kalory,
+    required this.totaltime,
+    required this.calory,
   });
   double progress() {
     if (endingkm <= 0) return 0; // 0’a bölmeyi önle
-    final p = endingkm / remainderkm; // tamamlanan oran
+    final p = endingkm / totalkm; // tamamlanan oran
     return p;
   }
 }

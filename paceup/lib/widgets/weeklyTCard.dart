@@ -71,7 +71,7 @@ Widget weeklyTCard(
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Text(
-                        "${goal.remainderkm}. km",
+                        "${goal.totalkm}. km",
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
@@ -170,7 +170,7 @@ Widget weeklyTCard(
                     ],
                   ),
                   Text(
-                    "${goal.kalory} kcal",
+                    "${goal.calory} kcal",
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],

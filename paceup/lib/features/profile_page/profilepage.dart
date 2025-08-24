@@ -1,120 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
+import 'package:paceup/data/repositories/userDR.dart';
+import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/fluttertoast.dart';
+import 'package:paceup/widgets/loader.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    late TextEditingController namecontroller = TextEditingController(
+      text: UserDR.currentuser!.fullName,
+    );
+    late TextEditingController numbercontroller = TextEditingController(
+      text: UserDR.currentuser!.mobileNumber,
+    );
+    late TextEditingController adresscontroller = TextEditingController(
+      text: UserDR.currentuser!.adress,
+    );
+
     final primary = Theme.of(context).primaryColor;
     final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              // Custom AppBar
-              Row(
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _BackCircle(onTap: () => Navigator.maybePop(context)),
-                  Expanded(
-                    child: Center(
-                      child: Text('Profile', style: theme.textTheme.bodyLarge),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 48,
-                  ), // back düğmesi ile başlık ortalansın
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Body
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  // Custom AppBar
+                  Row(
                     children: [
-                      _FieldLabel('FULL NAME'),
-                      const SizedBox(height: 8),
-                      _Input(
-                        initialValue: 'GEORGE BEST',
-                        primary: primary,
-                        textInputType: TextInputType.name,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _FieldLabel('MOBILE NUMBER'),
-                      const SizedBox(height: 8),
-                      _Input(
-                        initialValue: '+1 2495102934',
-                        primary: primary,
-                        textInputType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _FieldLabel('ADDRESS'),
-                      const SizedBox(height: 8),
-                      _Input(
-                        primary: primary,
-                        maxLength: 1200,
-                        minLines: 3,
-                        maxLines: 5,
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 56,
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primary,
-                            foregroundColor: Colors.white,
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 12,
-                            ),
-                            elevation: 0,
+                      _BackCircle(onTap: () => Navigator.maybePop(context)),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'Profile',
+                            style: theme.textTheme.bodyLarge,
                           ),
-                          onPressed: () {
-                            fluttertoast(context, 'saved changes');
-                          },
-                          child: const Text('Save Changes'),
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // Settings list
-                      _SettingsItem(title: 'About', onTap: () {}),
-                      _Divider(),
-                      _SettingsItem(title: 'Settings', onTap: () {}),
-                      _Divider(),
-                      _SettingsItem(
-                        title: 'Logout',
-                        showChevron: false,
-                        onTap: () {},
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(
+                        width: 48,
+                      ), // back düğmesi ile başlık ortalansın
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+                  const SizedBox(height: 24),
 
-      // Bottom primary button
+                  // Body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.zero,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _FieldLabel('FULL NAME'),
+                          const SizedBox(height: 8),
+                          _Input(
+                            textcontroller: namecontroller,
+                            primary: primary,
+                            textInputType: TextInputType.name,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _FieldLabel('MOBILE NUMBER'),
+                          const SizedBox(height: 8),
+                          _Input(
+                            textcontroller: numbercontroller,
+                            primary: primary,
+                            textInputType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _FieldLabel('ADDRESS'),
+                          const SizedBox(height: 8),
+                          _Input(
+                            textcontroller: adresscontroller,
+                            primary: primary,
+                            maxLength: 100,
+                            minLines: 3,
+                            maxLines: 5,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            height: 56,
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primary,
+                                foregroundColor: Colors.white,
+                                shape: const StadiumBorder(),
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 12,
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () async {
+                                final process = await updateUserData(
+                                  namecontroller.text,
+                                  numbercontroller.text,
+                                  adresscontroller.text,
+                                  'en',
+                                  'light',
+                                );
+                                if (process) {
+                                  fluttertoast(context, 'saved changes');
+                                } else {
+                                  fluttertoast(
+                                    context,
+                                    'canceled during processing',
+                                  );
+                                }
+                              },
+                              child: const Text('Save Changes'),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Settings list
+                          _SettingsItem(title: 'About', onTap: () {}),
+                          _Divider(),
+                          _SettingsItem(title: 'Settings', onTap: () {}),
+                          _Divider(),
+                          _SettingsItem(
+                            title: 'Logout',
+                            showChevron: false,
+                            onTap: () async {
+                              final process = await signOutuser();
+                              if (process) {
+                                context.pushReplacement(Paths.loginpage);
+                              } else {
+                                fluttertoast(
+                                  context,
+                                  'canceled during processing',
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Bottom primary button
+        ),
+        context.watch<Loader>().loading
+            ? Provider.of<Loader>(context, listen: false).loader(context)
+            : SizedBox(),
+      ],
     );
   }
 }
@@ -164,15 +213,14 @@ class _FieldLabel extends StatelessWidget {
 
 class _Input extends StatelessWidget {
   const _Input({
-    this.initialValue,
     required this.primary,
+    required this.textcontroller,
     this.textInputType,
     this.minLines,
     this.maxLines = 1,
     this.maxLength,
   });
-
-  final String? initialValue;
+  final TextEditingController textcontroller;
   final Color primary;
   final TextInputType? textInputType;
   final int? minLines;
@@ -190,7 +238,7 @@ class _Input extends StatelessWidget {
       onTapOutside: (_) {
         FocusScope.of(context).unfocus();
       },
-      initialValue: initialValue,
+      controller: textcontroller,
       style: Theme.of(context).textTheme.bodyMedium,
       keyboardType: textInputType,
       minLines: minLines,

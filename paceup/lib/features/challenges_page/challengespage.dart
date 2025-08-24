@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:paceup/features/challenges_page/challengespageprovider.dart';
 import 'package:paceup/widgets/addCard.dart';
 import 'package:paceup/widgets/eventCard.dart';
@@ -33,6 +32,7 @@ class _ChallengesPageState extends State<ChallengesPage> {
       listen: false,
     );
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

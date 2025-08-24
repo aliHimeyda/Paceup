@@ -40,6 +40,7 @@ class _ProgresspageState extends State<Progresspage> {
           .day,
     );
     return Scaffold(
+      backgroundColor:Theme.of(context).scaffoldBackgroundColor,
       body: FutureBuilder(
         future: gettingdata,
         builder: (BuildContext context, AsyncSnapshot snapshot) {

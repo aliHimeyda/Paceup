@@ -1,7 +1,6 @@
 // - padding: kenar boşluğu (px)
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';

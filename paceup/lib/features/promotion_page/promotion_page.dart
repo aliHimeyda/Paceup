@@ -7,15 +7,20 @@ import 'package:paceup/routing/paths.dart';
 import 'package:provider/provider.dart';
 
 class PromotionPage extends StatelessWidget {
-  final List<String> images = [
-    'assets/images/1.png',
-    'assets/images/2.png',
-    'assets/images/3.png',
-  ];
+  const PromotionPage({
+    super.key,
+    this.images = const [
+      'assets/images/1.png',
+      'assets/images/2.png',
+      'assets/images/3.png',
+    ],
+  });
+  final List<String> images;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.only(top: 80),
         child: Column(
@@ -115,25 +120,29 @@ class PromotionPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Center(
-                    child: TextButton(
-                      onPressed: () {
-                        context.push(Paths.loginpage);
-                      },
-                      child: RichText(
-                        text: const TextSpan(
-                          text: 'Zaten bir hesabınız var mı?',
+                    child: Row(
+                      spacing: 3
+                      ,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Zaten bir hesabınız var mı?',
                           style: TextStyle(color: Colors.black54),
-                          children: [
-                            TextSpan(
-                              text: 'Giriş yap',
-                              style: TextStyle(
-                                color: MyColors.darkorange,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
+                        GestureDetector(
+                          onTap: () {
+                            context.push(Paths.loginpage);
+                          },
+                          child: Text(
+                            'Giriş yap',
+                            style: TextStyle(
+                              color: MyColors.darkorange,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

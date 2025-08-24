@@ -1,7 +1,5 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:paceup/features/home_page/homepageprovider.dart';
 import 'package:paceup/widgets/monthlySteps/monthlyStepsprovider.dart';
 import 'package:provider/provider.dart';
 

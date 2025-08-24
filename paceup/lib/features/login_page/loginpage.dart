@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:paceup/data/repositories/userDR.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/core/theme/colors.dart';
 import 'package:paceup/data/datasources/remote_datasource/firebaseservices.dart';
 import 'package:paceup/features/login_page/loginpageprovider.dart';
-import 'package:paceup/routing/paths.dart';
 import 'package:provider/provider.dart';
 
 class Loginpage extends StatelessWidget {
@@ -19,6 +18,7 @@ class Loginpage extends StatelessWidget {
     final loaderProvider =  context.watch<Loader>();
 
     return Scaffold(
+      backgroundColor:Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           Padding(

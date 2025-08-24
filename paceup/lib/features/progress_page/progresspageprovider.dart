@@ -1,19 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:paceup/data/models/dailyGoal.dart';
-import 'package:paceup/data/models/weeklygoals.dart';
+import 'package:paceup/data/models/weeklygoal.dart';
 
 class Progresspageprovider with ChangeNotifier {
   final now = DateTime.now();
   Dailygoal goal = Dailygoal(
+    totaltime: DateTime.now(),
     endingkm: 50,
-    remainderkm: 70,
+    totalkm: 70,
     time: DateTime.now(),
-    kalory: 1000,
+    calory: 1000,
   );
-  late List<Dailygoal?> dailygoals =[goal, null, goal, null, null, goal, null];
-  late Weeklygoals goals = Weeklygoals(
-    goals: dailygoals,
-  );
+  late List<Dailygoal?> dailygoals = [goal, null, goal, null, null, goal, null];
+  late Weeklygoal goals = Weeklygoal(goals: dailygoals);
   // 2h15m = 2.25 hours out of 3
   late int selectedDayIndex = now.weekday % 7;
 

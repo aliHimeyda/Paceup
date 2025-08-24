@@ -1,56 +1,53 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:paceup/core/constants/remoteDkeys.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/main.dart';
-import 'package:paceup/routing/paths.dart';
-
-class Firebaseservices {
-  static User? currentuser;
-  static bool isloading = false;
-}
-
-Future<void> getcurrentuser() async {
-  Firebaseservices.currentuser = FirebaseAuth.instance.currentUser;
-  Firebaseservices.isloading = true;
-}
 
 Future<void> addveri(Map<String, dynamic> veri) async {
   await FirebaseFirestore.instance.collection('gelirgidertablosu').add(veri);
 }
 
+Future<bool> signOutUser() async {
+  try {
+    await FirebaseAuth.instance.signOut();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 Future<Map<String, dynamic>?> getUserData() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   final querySnapshot = await FirebaseFirestore.instance
-      .collection('userdata')
+      .collection(userdataCollection)
       .doc(uid)
       .get();
 
   if (querySnapshot.exists) {
-    debugPrint(querySnapshot.data().toString());
     return querySnapshot.data();
   } else {
     return null;
   }
 }
 
-Future<Map<String, dynamic>?> changeUserData() async {
+Future<bool> changeUserData(Map<String, dynamic> newData) async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
-  final querySnapshot = await FirebaseFirestore.instance
-      .collection('userdata')
-      .doc(uid)
-      .get();
-
-  if (querySnapshot.exists) {
-    return querySnapshot.data();
-  } else {
-    return null;
+  try {
+    await FirebaseFirestore.instance
+        .collection('userdata')
+        .doc(uid)
+        .update(newData);
+    return true;
+  } catch (e) {
+    return false;
   }
 }
 
@@ -161,7 +158,7 @@ Future<int> getUserborctoplami(
   return toplamborc;
 }
 
-Future<UserCredential?> signInWithGoogle() async {
+Future<Map<String, dynamic>?> signInWithGoogle() async {
   getIt<Loader>().loading = true;
   getIt<Loader>().change();
   try {
@@ -189,31 +186,36 @@ Future<UserCredential?> signInWithGoogle() async {
 
     final user = userCredential.user;
     if (user != null) {
-      Firebaseservices.currentuser = user;
-      Firebaseservices.isloading = true;
-
       final userDoc = await FirebaseFirestore.instance
-          .collection('userdata')
+          .collection(userdataCollection)
           .doc(user.uid)
           .get();
-
       if (!userDoc.exists) {
+        final locale = ui.PlatformDispatcher.instance.locale;
+        debugPrint('bilgiler alindiiiiiiiiiiiiiiiiii');
         await FirebaseFirestore.instance
-            .collection('userdata')
+            .collection(userdataCollection)
             .doc(user.uid)
             .set({
-              'ID': user.uid,
-              'namesurname': user.displayName ?? '',
-              'mail': user.email ?? '',
-              'phoneno': '',
-              'password': '',
+              uidD: user.uid,
+              ufullnameD: user.displayName ?? '',
+              umailD: user.email ?? '',
+              uadressD: '',
+              uphonenoD: '',
+              upasswordD: '',
+              ulanguageD:locale,
+              uthemeD:'light'
             });
       }
+      getIt<Loader>().loading = false;
+      getIt<Loader>().change();
+      debugPrint(userDoc.data().toString());
+      return userDoc.data();
+    } else {
+      getIt<Loader>().loading = false;
+      getIt<Loader>().change();
+      return null;
     }
-
-    getIt<Loader>().loading = false;
-    getIt<Loader>().change();
-    return userCredential;
   } catch (e) {
     getIt<Loader>().loading = false;
     getIt<Loader>().change();
@@ -302,8 +304,6 @@ Future<void> girisYap(
       email: mail,
       password: sifre,
     );
-
-    context.pushReplacement(Paths.homepage);
   } on FirebaseAuthException catch (e) {
     String mesaj = "Giriş başarısız";
 
@@ -335,21 +335,21 @@ Future<void> kayitEkle(
     final userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: mail, password: password);
 
-    final uid = userCredential.user!.uid;
-    final veri = {
-      'ID': uid, // UID kullanmak daha doğru
-      'isimsoyisim': namesurname,
-      'mail': mail,
-      'sifre': password, // DİKKAT: Güvenli değil
-      'telefon': "NO",
-    };
-
-    // Firestore'a kaydet — UID ile eşleştir
-    await FirebaseFirestore.instance
-        .collection('kullanicibilgileri')
-        .doc(uid)
-        .set(veri);
-    context.go(Paths.homepage);
+    final user = userCredential.user;
+    if (user != null) {
+      // Firestore'a kaydet — UID ile eşleştir
+      await FirebaseFirestore.instance
+          .collection('kullanicibilgileri')
+          .doc(user.uid)
+          .set({
+            uidD: user.uid,
+            ufullnameD: user.displayName ?? '',
+            umailD: user.email ?? '',
+            uadressD: '',
+            uphonenoD: '',
+            upasswordD: '',
+          });
+    }
   } on FirebaseAuthException catch (e) {
     String mesaj = "Bir hata oluştu";
 
@@ -366,15 +366,5 @@ Future<void> kayitEkle(
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Beklenmeyen bir hata oluştu")),
     );
-  }
-}
-
-Future<void> signinwithGoogle(BuildContext context) async {
-  final userCredential = await signInWithGoogle();
-  if (userCredential != null) {
-    print('Giriş Başarılı: ${userCredential.user?.displayName}');
-    context.go(Paths.homepage);
-  } else {
-    print('Giriş iptal edildi veya hata oluştu');
   }
 }

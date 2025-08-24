@@ -3,7 +3,7 @@ import 'package:paceup/data/models/dailyGoal.dart';
 
 class HomepageProvider with ChangeNotifier {
   final now = DateTime.now();
-  Dailygoal goal = Dailygoal(endingkm: 50, remainderkm: 70, time: DateTime.now(),kalory: 1000 );
+  Dailygoal goal = Dailygoal(endingkm: 50, totalkm: 70, time: DateTime.now(),calory: 1000 ,totaltime: DateTime.now());
   
   
 }

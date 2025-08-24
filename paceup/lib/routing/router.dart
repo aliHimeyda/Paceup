@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:paceup/bottomnavigation.dart';
-import 'package:paceup/core/constants/global_values.dart';
 import 'package:paceup/features/Gopage/gopage.dart';
 import 'package:paceup/features/challenges_page/challengespage.dart';
 import 'package:paceup/features/comingsonepage/comingsoonpage.dart';
@@ -32,7 +31,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.homepage,
-              builder: (context, state) => HomeScreen(),
+              builder: (context, state) => const HomeScreen(),
             ),
           ],
         ),
@@ -42,7 +41,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.progresspage,
-              builder: (context, state) => Progresspage(),
+              builder: (context, state) => const Progresspage(),
             ),
           ],
         ),
@@ -52,7 +51,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.challengespage,
-              builder: (context, state) => ChallengesPage(),
+              builder: (context, state) => const ChallengesPage(),
             ),
           ],
         ),
@@ -62,7 +61,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.profilepage,
-              builder: (context, state) => ProfilePage(),
+              builder: (context, state) => const ProfilePage(),
             ),
           ],
         ),
@@ -86,7 +85,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.promotionpage,
-              builder: (context, state) => PromotionPage(),
+              builder: (context, state) => const PromotionPage(),
             ),
           ],
         ),
@@ -96,7 +95,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.comingsoonpage,
-              builder: (context, state) => Comingsoonpage(),
+              builder: (context, state) => const Comingsoonpage(),
             ),
           ],
         ),
@@ -106,7 +105,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.notificationspage,
-              builder: (context, state) => NotificationsPage(),
+              builder: (context, state) => const NotificationsPage(),
             ),
           ],
         ),
@@ -116,7 +115,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.logopage,
-              builder: (context, state) => LoadingPage(),
+              builder: (context, state) => const LoadingPage(),
             ),
           ],
         ),
@@ -126,7 +125,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: Paths.loginpage,
-              builder: (context, state) => Loginpage(),
+              builder: (context, state) => const Loginpage(),
             ),
           ],
         ),

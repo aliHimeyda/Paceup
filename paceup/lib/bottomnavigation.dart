@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:paceup/routing/paths.dart';
-import 'package:provider/provider.dart';
 
 class Bottomnavigation extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -12,13 +11,8 @@ class Bottomnavigation extends StatefulWidget {
 }
 
 class _BottomnavigationState extends State<Bottomnavigation> {
-  int _index = 0;
-
   @override
   Widget build(BuildContext context) {
-    final _selectedColor = Theme.of(context).primaryColor; // Mavi
-    final _unselectedColor = const Color.fromARGB(255, 165, 165, 165); // Gri
-    // Mevcut sayfanın yolunu al (Yeni yöntem)
     final String currentPath = GoRouterState.of(context).uri.toString();
 
     bool showBottomNavBar =
@@ -46,7 +40,7 @@ class _BottomnavigationState extends State<Bottomnavigation> {
                 //   );
                 // }),
                 // Seçilince/Seçilmezken yazı stili ve rengi
-                labelTextStyle: MaterialStateProperty.all(
+                labelTextStyle: WidgetStateProperty.all(
                   Theme.of(context).textTheme.bodyMedium,
                 ),
                 // İstersen mavi “indicator pill”i kapat:
@@ -91,7 +85,7 @@ class _BottomnavigationState extends State<Bottomnavigation> {
             width: 26,
             height: 26,
             color: NavigationBarTheme.of(context).iconTheme
-                ?.resolve({MaterialState.selected}) // seçili rengini al
+                ?.resolve({WidgetState.selected}) // seçili rengini al
                 ?.color,
           )
         : Image.asset(path, width: 26, height: 26);

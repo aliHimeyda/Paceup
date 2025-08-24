@@ -1,8 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:paceup/core/constants/global_values.dart';
+import 'package:paceup/data/repositories/userDR.dart';
 import 'package:paceup/features/home_page/homepageprovider.dart';
 import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/addCard.dart';
@@ -16,7 +14,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final watchprovider = context.watch<HomepageProvider>();
     final provider = Provider.of<HomepageProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -32,13 +29,17 @@ class HomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  height: 51,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Morning, George 👋",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 2 + 50,
+                        child: Text(
+                          "Welcome, ${UserDR.currentuser!.fullName}",
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          softWrap: true,
+                          maxLines: null,
+                        ),
                       ),
                       Text(
                         "Ready to beat your personal record?",
@@ -87,7 +88,7 @@ class HomeScreen extends StatelessWidget {
             Text("today's goal", style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 15),
             // Weekly Target
-            weeklyTCard(context,provider.goal),
+            weeklyTCard(context, provider.goal),
             const SizedBox(height: 24),
 
             // 3. Monthly Stats
