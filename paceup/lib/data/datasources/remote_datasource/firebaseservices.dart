@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -203,8 +204,8 @@ Future<Map<String, dynamic>?> signInWithGoogle() async {
               uadressD: '',
               uphonenoD: '',
               upasswordD: '',
-              ulanguageD:locale,
-              uthemeD:'light'
+              ulanguageD: locale,
+              uthemeD: 'light',
             });
       }
       getIt<Loader>().loading = false;
@@ -366,5 +367,30 @@ Future<void> kayitEkle(
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Beklenmeyen bir hata oluştu")),
     );
+  }
+}
+// images upload:
+
+Future<String> uploadToBunny(
+  Uint8List fileBytes,
+  String fileName, {
+  String folder = "Goal",
+}) async {
+  final url = Uri.parse(
+    "https://uploadtobunny-gv2tn4psvq-ew.a.run.app"
+    "?file=$fileName&folder=$folder",
+  );
+
+  final response = await http.put(
+    url,
+    headers: {"Content-Type": "application/octet-stream"},
+    body: fileBytes,
+  );
+
+  if (response.statusCode == 200) {
+    print("Upload successful: ${response.body}");
+    return response.body;
+  } else {
+    throw Exception("Upload failed: ${response.statusCode} ${response.body}");
   }
 }

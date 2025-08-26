@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:paceup/core/utils/drawtrackpng.dart';
 import 'package:paceup/core/utils/getcurrentposition.dart';
+import 'package:paceup/data/datasources/remote_datasource/firebaseservices.dart';
 import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
@@ -162,6 +163,11 @@ class GoPage extends StatelessWidget {
                                           context,
                                         ).primaryColor, // veya Colors.transparent
                                       );
+                                      final result = await uploadToBunny(
+                                        png!,
+                                        "myImage123.jpg",
+                                      );
+                                      print(result);
                                       valuesprovider.finish();
                                       positionprovider.finish();
                                       Provider.of<Loader>(
