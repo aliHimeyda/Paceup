@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:paceup/core/constants/remoteDkeys.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/main.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 Future<void> addveri(Map<String, dynamic> veri) async {
   await FirebaseFirestore.instance.collection('gelirgidertablosu').add(veri);
@@ -371,26 +372,20 @@ Future<void> kayitEkle(
 }
 // images upload:
 
-Future<String> uploadToBunny(
-  Uint8List fileBytes,
-  String fileName, {
-  String folder = "Goal",
-}) async {
-  final url = Uri.parse(
-    "https://uploadtobunny-gv2tn4psvq-ew.a.run.app"
-    "?file=$fileName&folder=$folder",
-  );
-
-  final response = await http.put(
-    url,
-    headers: {"Content-Type": "application/octet-stream"},
-    body: fileBytes,
-  );
-
-  if (response.statusCode == 200) {
-    print("Upload successful: ${response.body}");
-    return response.body;
-  } else {
-    throw Exception("Upload failed: ${response.statusCode} ${response.body}");
+Future<String?> uploadToFirebase(Uint8List fileBytes, String fileName) async {
+  try {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final ref = FirebaseStorage.instance.ref('user_uploads/$uid/$fileName.jpg');
+    await ref.putData(fileBytes, SettableMetadata(contentType: 'image/jpeg'));
+    return ref.fullPath;
+  } catch (e) {
+    print('errrrorr: $e');
+    return null;
   }
+}
+
+//getting images:
+
+Future<Uint8List?> fetchImage() async {
+  try {} catch (e) {}
 }

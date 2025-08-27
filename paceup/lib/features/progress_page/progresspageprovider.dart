@@ -5,7 +5,7 @@ import 'package:paceup/data/models/weeklygoal.dart';
 class Progresspageprovider with ChangeNotifier {
   final now = DateTime.now();
   Dailygoal goal = Dailygoal(
-    totaltime: DateTime.now(),
+    totaltime:1000,
     endingkm: 50,
     totalkm: 70,
     time: DateTime.now(),

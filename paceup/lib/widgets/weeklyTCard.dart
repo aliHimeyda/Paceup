@@ -3,11 +3,17 @@ import 'package:go_router/go_router.dart';
 import 'package:paceup/data/models/dailyGoal.dart';
 import 'package:paceup/routing/paths.dart';
 
-Widget weeklyTCard(
-  BuildContext context,
-  Dailygoal goal
-) {
-  final dayNames = ['Monday', 'Tuesday', 'Wedensday', 'Thursday', 'Friday', 'Saturday','Sunday'];
+Widget weeklyTCard(BuildContext context, Dailygoal goal) {
+  final totalTime = formatHmsFromSeconds(goal.totaltime);
+  final dayNames = [
+    'Monday',
+    'Tuesday',
+    'Wedensday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   final currentday = dayNames[goal.time.weekday - 1];
   return Container(
     height: 173,
@@ -26,7 +32,7 @@ Widget weeklyTCard(
             children: [
               GestureDetector(
                 onTap: () {
-                  context.push(Paths.gopage);
+                  context.push(Paths.gopage, extra: goal);
                 },
                 child: Container(
                   width: 56,
@@ -122,7 +128,7 @@ Widget weeklyTCard(
                     ],
                   ),
                   Text(
-                    "${goal.time.hour}h:${goal.time.minute}m:${goal.time.second}s",
+                    totalTime,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -181,4 +187,24 @@ Widget weeklyTCard(
       ],
     ),
   );
+}
+
+String formatHmsFromSeconds(
+  int totalSeconds, {
+  bool pad = true,
+  bool omitZeroHours = false,
+}) {
+  final h = totalSeconds ~/ 3600;
+  final m = (totalSeconds % 3600) ~/ 60;
+  final s = totalSeconds % 60;
+
+  final mm = pad ? m.toString().padLeft(2, '0') : '$m';
+  final ss = pad ? s.toString().padLeft(2, '0') : '$s';
+
+  if (omitZeroHours && h == 0) {
+    // Örn: 75s -> "01m:15s"
+    return '${mm}m:${ss}s';
+  }
+  // Örn: 3671s -> "1h:01m:11s"
+  return '${h}h:${mm}m:${ss}s';
 }

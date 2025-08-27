@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:paceup/core/utils/drawtrackpng.dart';
 import 'package:paceup/core/utils/getcurrentposition.dart';
 import 'package:paceup/data/datasources/remote_datasource/firebaseservices.dart';
+import 'package:paceup/data/models/dailyGoal.dart';
 import 'package:paceup/routing/paths.dart';
 import 'package:paceup/widgets/loader.dart';
 import 'package:paceup/features/Gopage/goprovider.dart';
@@ -13,7 +14,8 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 
 class GoPage extends StatelessWidget {
-  const GoPage({super.key});
+  final Dailygoal currentgoal;
+  const GoPage({super.key, required this.currentgoal});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,7 @@ class GoPage extends StatelessWidget {
     return Consumer<GoValuesprovider>(
       child: _GoMap(),
       builder: (context, v, mapChild) {
+        v.setelapsed = currentgoal.totaltime;
         return Scaffold(
           body: Stack(
             children: [
@@ -36,102 +39,167 @@ class GoPage extends StatelessWidget {
                   onTap: () => Navigator.of(context).maybePop(),
                 ),
               ),
-
-              Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 0),
-                      padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                      width: 390,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(24),
+              DraggableScrollableSheet(
+                    initialChildSize:
+                        0.55,
+                    minChildSize: 0.40, 
+                    maxChildSize: 0.55, 
+                    snap: true,
+                    snapSizes: const [
+                      0.40,
+                      0.55,
+                    ], 
+                    builder: (context, controller) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              offset: Offset(8, -8),
+                              blurRadius: 24,
+                              color: Color.fromRGBO(194, 194, 194, 0.15),
+                            ),
+                          ],
                         ),
-                        boxShadow: const [
-                          BoxShadow(
-                            offset: Offset(8, -8),
-                            blurRadius: 24,
-                            color: Color.fromRGBO(194, 194, 194, 0.15),
+                        child: SingleChildScrollView(
+                          controller:
+                              controller, 
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 16,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 100,
-                            child: Divider(
-                              thickness: 7,
-                              radius: BorderRadius.all(Radius.circular(5)),
-                              color: Theme.of(context).canvasColor,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _StatsGrid(
-                              runningTime: v.elapsedText,
-                              avgPace:
-                                  '${v.avgPaceMins.toStringAsFixed(0)} mins',
-                              distance: '${v.distanceKm.toStringAsFixed(0)} km',
-                              calories: '${v.calories} kcal',
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 2 -
-                                      20,
-                                  height: 52,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(
-                                        context,
-                                      ).primaryColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                child: Divider(
+                                  thickness: 7,
+                                  color: Theme.of(context).canvasColor,
+                                ),
+                              ),
+                              // ↓↓↓ Senin mevcut içeriğin ( _StatsGrid, butonlar, Finish vb.) ↓↓↓
+                              _StatsGrid(
+                                runningTime: v.elapsedText,
+                                avgPace:
+                                    '${v.avgPaceMinsPerKm(v.elapsed.inSeconds, currentgoal.calory).toStringAsFixed(2)} mins',
+                                distance:
+                                    '${currentgoal.endingkm.toStringAsFixed(0)} km',
+                                calories: '${currentgoal.calory} kcal',
+                              ),
+                              const SizedBox(height: 20),
+                               Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width /
+                                              2 -
+                                          20,
+                                      height: 52,
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(
+                                            context,
+                                          ).primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          debugPrint('girdi');
+                                          if (valuesprovider.isRunning) {
+                                            debugPrint(
+                                              'ilk kosula girdi girdi',
+                                            );
+
+                                            valuesprovider.stop();
+                                            positionprovider.stopsub();
+                                          } else {
+                                            debugPrint('ikinci kosula girdi');
+
+                                            valuesprovider.start();
+                                            positionprovider.startListening();
+                                          }
+                                        },
+                                        icon: Icon(
+                                          v.isRunning
+                                              ? Icons.stop
+                                              : Icons.play_arrow,
+                                          color: Theme.of(
+                                            context,
+                                          ).scaffoldBackgroundColor,
+                                        ),
+                                        label: Text(
+                                          v.isRunning ? 'Stop' : 'Continue',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleMedium,
+                                        ),
                                       ),
                                     ),
-                                    onPressed: () {
-                                      debugPrint('girdi');
-                                      if (valuesprovider.isRunning) {
-                                        debugPrint('ilk kosula girdi girdi');
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width /
+                                              2 -
+                                          20,
+                                      height: 52,
+                                      child: OutlinedButton(
+                                        style: OutlinedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                          side: BorderSide(
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          Provider.of<Loader>(
+                                            context,
+                                            listen: false,
+                                          ).loading = true;
+                                          Provider.of<Loader>(
+                                            context,
+                                            listen: false,
+                                          ).change();
 
-                                        valuesprovider.stop();
-                                        positionprovider.stopsub();
-                                      } else {
-                                        debugPrint('ikinci kosula girdi');
-
-                                        valuesprovider.start();
-                                        positionprovider.startListening();
-                                      }
-                                    },
-                                    icon: Icon(
-                                      v.isRunning
-                                          ? Icons.stop
-                                          : Icons.play_arrow,
-                                      color: Theme.of(
-                                        context,
-                                      ).scaffoldBackgroundColor,
+                                          //llllllllllllllll
+                                          Provider.of<Loader>(
+                                            context,
+                                            listen: false,
+                                          ).loading = false;
+                                          Provider.of<Loader>(
+                                            context,
+                                            listen: false,
+                                          ).change();
+                                        },
+                                        child: Text(
+                                          'save progress',
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    label: Text(
-                                      v.isRunning ? 'Stop' : 'Continue',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleMedium,
-                                    ),
-                                  ),
+                                  ],
                                 ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 2 -
-                                      20,
+                              SizedBox(height: 12),
+                              Center(
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width - 30,
                                   height: 52,
                                   child: OutlinedButton(
                                     style: OutlinedButton.styleFrom(
@@ -163,7 +231,7 @@ class GoPage extends StatelessWidget {
                                           context,
                                         ).primaryColor, // veya Colors.transparent
                                       );
-                                      final result = await uploadToBunny(
+                                      final result = await uploadToFirebase(
                                         png!,
                                         "myImage123.jpg",
                                       );
@@ -178,8 +246,7 @@ class GoPage extends StatelessWidget {
                                         context,
                                         listen: false,
                                       ).change();
-                                      final sizeInKb =
-                                          png!.lengthInBytes / 1024;
+                                      final sizeInKb = png.lengthInBytes / 1024;
                                       final sizeInMb =
                                           png.lengthInBytes / (1024 * 1024);
                                       print(
@@ -194,21 +261,6 @@ class GoPage extends StatelessWidget {
                                         Paths.progressresultpage,
                                         extra: png,
                                       );
-                                      // if (png != null) {
-                                      //   showDialog(
-                                      //     context: context,
-                                      //     builder: (_) => Dialog(
-                                      //       child: SizedBox(
-                                      //         width: 260,
-                                      //         height: 260,
-                                      //         child: Image.memory(
-                                      //           png,
-                                      //           fit: BoxFit.contain,
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   );
-                                      // }
                                     },
                                     child: Text(
                                       'Finish',
@@ -218,12 +270,12 @@ class GoPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   )
                   .animate(delay: 120.ms)
                   .fadeIn(duration: 280.ms, curve: Curves.easeOut)

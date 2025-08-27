@@ -6,14 +6,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class GoValuesprovider extends ChangeNotifier {
   // UI değerleri (örnek defaultlar)
   Duration _elapsed = Duration.zero;
-  double avgPaceMins = 65; // dakikada ortalama pace
-  double distanceKm = 48; // km
-  int calories = 621; // kcal
   Timer? _timer;
   bool _running = false;
 
   bool get isRunning => _running;
   Duration get elapsed => _elapsed;
+  set setelapsed(int v) => _elapsed = Duration(seconds: v);
   String get elapsedText {
     final h = _elapsed.inHours.toString().padLeft(2, '0');
     final m = (_elapsed.inMinutes % 60).toString().padLeft(2, '0');
@@ -47,6 +45,11 @@ class GoValuesprovider extends ChangeNotifier {
   Future<void> finish() async {
     reset();
     _elapsed = Duration.zero;
+  }
+
+  double avgPaceMinsPerKm(int totalSeconds, double endingKm) {
+    if (endingKm <= 0) throw ArgumentError('endingKm > 0 olmalı');
+    return (totalSeconds / 60.0) / endingKm;
   }
 }
 

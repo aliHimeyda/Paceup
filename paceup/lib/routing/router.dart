@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:paceup/bottomnavigation.dart';
+import 'package:paceup/data/models/dailyGoal.dart';
 import 'package:paceup/features/Gopage/gopage.dart';
 import 'package:paceup/features/challenges_page/challengespage.dart';
 import 'package:paceup/features/comingsonepage/comingsoonpage.dart';
@@ -134,7 +135,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: Paths.gopage,
       parentNavigatorKey: routerkey, // shell’in ÜSTÜNDE aç
-      builder: (context, state) => const GoPage(),
+      builder: (context, state) {
+        final goal = state.extra as Dailygoal;
+        return GoPage(currentgoal: goal,);
+      },
     ),
   ],
 );
