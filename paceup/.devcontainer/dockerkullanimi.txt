@@ -1,0 +1,7 @@
+# Dockerfile’ın bulunduğu klasöre geç ve yeni docker olustur
+docker build -t paceup-full:latest .
+
+# Projeyi mount ederek çalıştır (Windows yolu tırnaklı!)
+docker run -it --rm ^
+  -v "C:\Users\aliha\OneDrive - ogr.sakarya.edu.tr\Belgeler\Paceup\paceup:/workspace" ^
+  paceup-full:latest

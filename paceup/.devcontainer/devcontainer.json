@@ -1,11 +1,22 @@
 {
   "name": "Flutter + Firebase",
-  "image": "firebase-cli",
+  "image": "paceup-full:latest",
   "workspaceFolder": "/work",
   "workspaceMount": "source=${localWorkspaceFolder},target=/work,type=bind",
   "mounts": [
     "source=flutter_pub_cache,target=/root/.pub-cache,type=volume",
     "source=gradle_cache,target=/root/.gradle,type=volume"
   ],
-  "postCreateCommand": "firebase --version && flutter doctor -v"
+  "postCreateCommand": "firebase --version && flutter doctor -v",
+  "customizations": {
+  "vscode": {
+    "extensions": [
+      "dart-code.flutter",
+      "dart-code.dart-code"
+    ],
+    "settings": {
+      "editor.formatOnSave": true
+    }
+  }
+}
 }

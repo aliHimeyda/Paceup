@@ -1,11 +1,16 @@
-# Küçük ve temiz bir base
-FROM node:20-alpine
+# Flutter ortamını baz al
+FROM flutter-dev:latest
 
-# Bazı paketler (opsiyonel ama derleme sorunlarını engeller)
-RUN apk add --no-cache bash git curl
+# Node.js 20 + Firebase CLI kur
+RUN apt-get update && apt-get install -y curl ca-certificates gnupg && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+      | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
+      > /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && apt-get install -y nodejs && \
+    npm install -g firebase-tools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Firebase CLI global kur
-RUN npm install -g firebase-tools
-
-# Varsayılan çalışma klasörü
-WORKDIR /app
+WORKDIR /workspace
+CMD ["bash"]
